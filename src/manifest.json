@@ -1,7 +1,11 @@
 {
    "manifest_version": 2,
-   "name": "CC",
+   "name": "Cookie Manager",
    "version": "0.1",
+
+   "icons": { "16": "img/icon_16.png",
+              "48": "img/icon_48.png",
+             "128": "img/icon_128.png" },
 
    "background": {
       "scripts": ["cc_bg.js"]
