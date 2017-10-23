@@ -1,5 +1,21 @@
 <!DOCTYPE html>
-<html><head><title>Dialog test</title></head>
+<html>
+<style>
+   body { margin: 0px; padding: 0px; }
+   tr:not(:first-child):hover { background-color: #cceeff; }
+   tr:hover td { background-color: transparent; /* or #000 */ }
+   tr:not(:first-child) { cursor: pointer; }
+</style>
+<script type="text/javascript" src="cc_popup.js"></script>
+
 <body>
-HELLO WORLD!
-</body></html>
+
+<table id="main_table" border="0" cellspacing="0" cellpadding="0" width="200px">
+<th align="center" colspan="3"><span id="txt_pattern">undefined</span></th>
+<tr id="rowV"><td><img id="ckV" src="img/notick.png"/></td><td><img id="imgV" src="img/icon_v.png"/></td><td>Cookies Allowed</td></tr>
+<tr id="rowS"><td><img id="ckS" src="img/notick.png"/></td><td><img id="imgS" src="img/icon_s.png"/></td><td>Cookies Allowed for Session</td></tr>
+<tr id="rowX"><td><img id="ckX" src="img/notick.png"/></td><td><img id="imgX" src="img/icon_x.png"/></td><td>Cookies Denied</td></tr>
+</table>
+
+</body>
+</html>

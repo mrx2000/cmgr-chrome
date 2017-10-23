@@ -1,9 +1,11 @@
+/*
 function test2(url) {
    chrome.contentSettings['cookies'].set({
        'primaryPattern': url,
        'setting': 'block'
    });
 }
+*/
 
 
 /*
@@ -42,6 +44,49 @@ chrome.browserAction.onClicked.addListener(
 );
 */
 
+function getPatternFromURL(url)
+{
+   var link = document.createElement('a');
+   link.setAttribute('href', url);
+   if (link.protocol != "http:" && link.protocol != "https:") return null;
+
+   var hstr = link.hostname;
+   var hparts = hstr.split('.');
+   var pidx = 0, plen = hparts.length;
+
+   // require at least 2 elements for common top level domains
+   // at least 3 for others
+   var hlast = hparts[plen - 1].toLowerCase();
+   var toplevel = [ "com", "net", "org", "tv", "gov", "mil" ]; // xxx expand?
+   var minrem = 3;
+   if (toplevel.indexOf(hlast) > -1) {
+      minrem = 2;
+   }
+
+   // remove leading "www" and one level, if any
+   if ((hparts[pidx].toLowerCase() == "www") && ((plen - pidx) > minrem)) {
+      ++pidx;
+   }
+   if ((plen - pidx) > minrem) { ++pidx; }
+   hparts.splice(0, pidx);
+   var patstr = hparts.join(".")
+
+   //console.log("Pattern: " + patstr);
+   return patstr;
+}
+
+
+// we are currentWindow - better use lastFocusedWindow
+function getCurrentInfo(cbfun)
+{
+   chrome.tabs.query({ active: true, lastFocusedWindow: true}, function(tabs) {
+      var url = tabs[0].url;
+      var setting = tabSettingGet(tabs[0].id);
+      var pattern = getPatternFromURL(url);
+      cbfun(url, pattern, setting);
+   });
+}
+
 
 function isWebpageURL(url)
 {
@@ -70,20 +115,53 @@ function getIconBySetting(setting)
 }
 
 
+function getTitleBySetting(setting)
+{
+   var title = "Cookie Manager";
 
-function processSetting(cb)
+   switch (setting) {
+   case "allow": title = "Cookies Allowed"; break;
+   case "session_only": title = "Cookies Allowed for Session"; break;
+   case "block": title = "Cookies Denied"; break;
+   default: title="Cookie Manager"; break;
+   }
+
+   return title;
+}
+
+
+function setTabInfoComplete(cb)
+{
+   tabSettingStore(cb.tab.id, cb.setting);
+
+   chrome.browserAction.setIcon({
+      'path': getIconBySetting(cb.setting),
+      'tabId': cb.tab.id
+   });
+
+   chrome.browserAction.setTitle({
+      'title': getTitleBySetting(cb.setting),
+      'tabId': cb.tab.id
+   });
+}
+
+
+/*
+ * Complete processing url with the returned cookie setting
+ * Return control to appropriate completion function based
+ * on caller choice
+ */
+function processURLSetting(cb)
 {
    if (cb.what == "tab") {
-      tabSettingStore(cb.tab.id, cb.setting);
-
-      chrome.browserAction.setIcon({
-         'path': getIconBySetting(cb.setting),
-         'tabId': cb.tab.id
-      });
+      setTabInfoComplete(cb);
    }
 }
 
 
+/*
+ * Process url, pass control based on caller selector
+ */
 function processURL(cb)
 {
    // set icon for tabs that load http/https pages
@@ -95,16 +173,19 @@ function processURL(cb)
       },
       function(details) {
          cb.setting = details.setting;
-         processSetting(cb);
+         processURLSetting(cb);
       });
    } else {
       cb.setting = "other";
-      processSetting(cb);
+      processURLSetting(cb);
    }
 }
 
 
-function setTabIcon(tab)
+/*
+ * set completion to "tab" and invoke url processing
+ */
+function setTabInfo(tab)
 {
    var cb = { "what": "tab", "tab": tab, "url": tab.url };
    processURL(cb);
@@ -117,7 +198,7 @@ function setTabIcon(tab)
 chrome.tabs.onUpdated.addListener(
    function (tabId, changeInfo, tab) {
       if (changeInfo.status == 'loading' && tab.active) {
-         setTabIcon(tab);
+         setTabInfo(tab);
       }
    }
 );
@@ -133,7 +214,7 @@ chrome.tabs.onRemoved.addListener(function(tabid, removed) {
  */
 chrome.tabs.query({}, function(tabs) {
    for (var i = 0; i < tabs.length; i++) {
-      setTabIcon(tabs[i]);
+      setTabInfo(tabs[i]);
    }
 });
 
