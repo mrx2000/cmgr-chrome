@@ -1,1 +1,1 @@
-# cmgr-chrome
+# Chrome cookie allow/deny list manager
