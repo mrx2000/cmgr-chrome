@@ -7,6 +7,25 @@ function test2(url) {
 }
 */
 
+function setCurrentInfo(pattern, setting, cbfun)
+{
+   var p1 = "*://*." + pattern + ":*/*";
+
+   console.log("Pattern: " + p1);
+
+   chrome.tabs.query({ active: true, lastFocusedWindow: true}, function(tabs) {
+      var tab = tabs[0];
+      chrome.contentSettings['cookies'].set({
+          'primaryPattern': p1,
+          'setting': setting
+      }, 
+      function() {
+         var cb = { "what": "tab", "tab": tab, "url": tab.url, "fun": cbfun };
+         processURL(cb);
+      });
+   });
+}
+
 
 /*
  * Store per-tab settings in this array for further reference
@@ -31,18 +50,6 @@ function tabSettingDelete(tabid)
    delete cc_tab_info[tabid];
 }
 
-
-/*
-chrome.browserAction.onClicked.addListener(
-   function(tab) {
-      // lastFocusedWindow vs currentWindow
-      chrome.tabs.query({ active: true, currentWindow: true}, function(tabs) {
-         console.log("Stored status for tab id [" + tabs[0].id + "] is " + tabSettingGet(tabs[0].id));
-         //chrome.tabs.sendMessage(activeTab.id, {"msg": "cc_clicked"});
-      });
-   }
-);
-*/
 
 function getPatternFromURL(url)
 {
@@ -74,6 +81,7 @@ function getPatternFromURL(url)
    //console.log("Pattern: " + patstr);
    return patstr;
 }
+
 
 
 // we are currentWindow - better use lastFocusedWindow
@@ -129,6 +137,26 @@ function getTitleBySetting(setting)
    return title;
 }
 
+function getPopupBySetting(setting)
+{
+   var popup = "cc_popup.html";
+
+   switch (setting) {
+   case "allow": 
+   case "session_only": 
+   case "block": 
+      popup = "cc_popup.html";
+      break;
+   default: 
+      popup = "cc_popup0.html";
+      break;
+   }
+
+   return popup;
+}
+
+
+
 
 function setTabInfoComplete(cb)
 {
@@ -143,6 +171,13 @@ function setTabInfoComplete(cb)
       'title': getTitleBySetting(cb.setting),
       'tabId': cb.tab.id
    });
+
+   chrome.browserAction.setPopup({
+      'popup': getPopupBySetting(cb.setting),
+      'tabId': cb.tab.id
+   });
+   
+   if (cb.fun) cb.fun();
 }
 
 
@@ -187,7 +222,7 @@ function processURL(cb)
  */
 function setTabInfo(tab)
 {
-   var cb = { "what": "tab", "tab": tab, "url": tab.url };
+   var cb = { "what": "tab", "tab": tab, "url": tab.url, "fun": null };
    processURL(cb);
 }
 

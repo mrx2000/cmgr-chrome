@@ -1,21 +1,37 @@
 <!DOCTYPE html>
 <html>
+<title>popup</title>
 <style>
    body { margin: 0px; padding: 0px; }
    tr:not(:first-child):hover { background-color: #cceeff; }
    tr:hover td { background-color: transparent; /* or #000 */ }
    tr:not(:first-child) { cursor: pointer; }
+   #div_bottom { 
+      cursor: pointer; 
+      position:relative;
+      float:right;
+   }
+   #div_hr {
+      min-height: 1px;
+      clear:both; width:100%;
+      border-bottom:1px solid #000000;
+      height:1px; padding-top:0px;
+      margin-top:1px;
+      margin-bottom:1px;
+   }
 </style>
 <script type="text/javascript" src="cc_popup.js"></script>
 
 <body>
 
 <table id="main_table" border="0" cellspacing="0" cellpadding="0" width="200px">
-<th align="center" colspan="3"><span id="txt_pattern">undefined</span></th>
-<tr id="rowV"><td><img id="ckV" src="img/notick.png"/></td><td><img id="imgV" src="img/icon_v.png"/></td><td>Cookies Allowed</td></tr>
-<tr id="rowS"><td><img id="ckS" src="img/notick.png"/></td><td><img id="imgS" src="img/icon_s.png"/></td><td>Cookies Allowed for Session</td></tr>
-<tr id="rowX"><td><img id="ckX" src="img/notick.png"/></td><td><img id="imgX" src="img/icon_x.png"/></td><td>Cookies Denied</td></tr>
+   <th align="center" colspan="3"><span id="txt_pattern">undefined</span></th>
+   <tr id="rowV"><td><img id="ckV" src="img/notick.png"/></td><td><img id="imgV" src="img/icon_v.png"/></td><td>Cookies Allowed</td></tr>
+   <tr id="rowS"><td><img id="ckS" src="img/notick.png"/></td><td><img id="imgS" src="img/icon_s.png"/></td><td>Cookies Allowed for Session</td></tr>
+   <tr id="rowX"><td><img id="ckX" src="img/notick.png"/></td><td><img id="imgX" src="img/icon_x.png"/></td><td>Cookies Denied</td></tr>
 </table>
+<div id="div_hr"></div>
+<div id="div_bottom">Cookie Settings</div>
 
 </body>
 </html>
