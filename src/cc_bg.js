@@ -1,17 +1,15 @@
-/*
-function test2(url) {
-   chrome.contentSettings['cookies'].set({
-       'primaryPattern': url,
-       'setting': 'block'
-   });
-}
-*/
 
 function setCurrentInfo(pattern, setting, cbfun)
 {
    var p1 = "*://*." + pattern + ":*/*";
+   var p2 = null;
 
-   console.log("Pattern: " + p1);
+   // different pattern for IPv4
+   if (pattern.match(/^[\d]+\.[\d]+\.[\d]+\.[\d]+$/)) {
+      p1 = "*://" + pattern + ":*/*";
+   }
+
+   //console.log("Pattern: " + p1);
 
    chrome.tabs.query({ active: true, lastFocusedWindow: true}, function(tabs) {
       var tab = tabs[0];
@@ -24,6 +22,16 @@ function setCurrentInfo(pattern, setting, cbfun)
          processURL(cb);
       });
    });
+
+   // google is special - we must block www.google.com
+   // in addition to *.google.com, otherwise it seems to
+   // be able to store local storage data
+   if (pattern.toLowerCase() == "google.com") {
+      chrome.contentSettings['cookies'].set({
+          'primaryPattern': "*://www.google.com:*/*",
+          'setting': setting
+      });
+   }
 }
 
 
@@ -51,11 +59,44 @@ function tabSettingDelete(tabid)
 }
 
 
+function isWebpageURL(url)
+{
+   var link = document.createElement('a');
+   link.setAttribute('href', url);
+   if (link.protocol == "http:" || link.protocol == "https:") {
+      return true;
+   } else {
+      return false;
+   }
+}
+
+
+function isIPv4(url)
+{
+   var link = document.createElement('a');
+   link.setAttribute('href', url);
+   if (link.protocol != "http:" && link.protocol != "https:") {
+      return false;
+   }
+
+   var hstr = link.hostname;
+   if (hstr.match(/^[\d]+\.[\d]+\.[\d]+\.[\d]+$/)) {
+      return true;
+   }
+
+   return false;
+}
+
+
 function getPatternFromURL(url)
 {
    var link = document.createElement('a');
    link.setAttribute('href', url);
    if (link.protocol != "http:" && link.protocol != "https:") return null;
+
+   if (isIPv4(url)) {
+      return link.hostname;
+   }
 
    var hstr = link.hostname;
    var hparts = hstr.split('.');
@@ -93,18 +134,6 @@ function getCurrentInfo(cbfun)
       var pattern = getPatternFromURL(url);
       cbfun(url, pattern, setting);
    });
-}
-
-
-function isWebpageURL(url)
-{
-   var link = document.createElement('a');
-   link.setAttribute('href', url);
-   if (link.protocol == "http:" || link.protocol == "https:") {
-      return true;
-   } else {
-      return false;
-   }
 }
 
 
