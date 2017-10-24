@@ -26,9 +26,12 @@ function setCurrentInfo(pattern, setting, cbfun)
    // google is special - we must block www.google.com
    // in addition to *.google.com, otherwise it seems to
    // be able to store local storage data
-   if (pattern.toLowerCase() == "google.com") {
+   const special = [ "amazon.com", "google.com", "airbnb.com", "facebook.com",
+         "tripadvisor.com", "live.com", "msn.com", "yahoo.com" ];
+   if (special.indexOf(pattern.toLowerCase()) > -1) {
+      var p2 = "*://www." + pattern + ":*/*";
       chrome.contentSettings['cookies'].set({
-          'primaryPattern': "*://www.google.com:*/*",
+          'primaryPattern': p2,
           'setting': setting
       });
    }
